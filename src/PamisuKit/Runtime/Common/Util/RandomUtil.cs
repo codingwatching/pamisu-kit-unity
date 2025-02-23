@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
@@ -33,7 +34,34 @@ namespace PamisuKit.Common.Util
 
         public static float RandomRange(this float[] values)
         {
-            return Random.Range(values[0], values[1]);
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (values[0] == values[1])
+                return values[0];
+            if (values[0] < values[1])
+                return Random.Range(values[0], values[1]);
+            else
+                return Random.Range(values[1], values[0]);
+        }
+
+        public static float RandomRange(this Vector2 value)
+        {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (value.x == value.y)
+                return value.x;
+            if (value.x < value.y)
+                return Random.Range(value.x, value.y);
+            else
+                return Random.Range(value.y, value.x);
+        }
+        
+        public static int RandomRange(this Vector2Int value, bool rightInclusive)
+        {
+            if (value.x == value.y)
+                return value.x;
+            if (value.x < value.y)
+                return Random.Range(value.x, rightInclusive? value.y + 1 : value.y);
+            else
+                return Random.Range(value.y, rightInclusive? value.x + 1 : value.x);
         }
 
         public static T RandomItem<T>(this T[] collections)
@@ -44,6 +72,64 @@ namespace PamisuKit.Common.Util
         public static T RandomItem<T>(this List<T> collections)
         {
             return collections[Random.Range(0, collections.Count)];
+        }
+
+        public static int RandomWheel<T>(this T[] items, float totalProbability, Func<T, float> getProbabilityFunc)
+        {
+            if (items.Length == 1)
+                return 0;
+            var pRandom = Random.Range(0f, totalProbability);
+            var temp = 0f;
+            for (int i = 0; i < items.Length; i++)
+            {
+                temp += getProbabilityFunc(items[i]);
+                if (pRandom <= temp)
+                {
+                    return i;
+                }
+            }
+            return items.Length - 1;
+        }
+        
+        public static int RandomWheel<T>(this T[] items, Func<T, float> getProbabilityFunc)
+        {
+            if (items.Length == 1)
+                return 0;
+            var totalProbability = 0f;
+            for (int i = 0; i < items.Length; i++)
+            {
+                totalProbability += getProbabilityFunc(items[i]);
+            }
+            return RandomWheel(items, totalProbability, getProbabilityFunc);
+        }
+        
+        public static int RandomWheel<T>(this List<T> items, float totalProbability, Func<T, float> getProbabilityFunc)
+        {
+            if (items.Count == 1)
+                return 0;
+            var pRandom = Random.Range(0f, totalProbability);
+            var temp = 0f;
+            for (int i = 0; i < items.Count; i++)
+            {
+                temp += getProbabilityFunc(items[i]);
+                if (pRandom <= temp)
+                {
+                    return i;
+                }
+            }
+            return items.Count - 1;
+        }
+
+        public static int RandomWheel<T>(this List<T> items, Func<T, float> getProbabilityFunc)
+        {
+            if (items.Count == 1)
+                return 0;
+            var totalProbability = 0f;
+            for (int i = 0; i < items.Count; i++)
+            {
+                totalProbability += getProbabilityFunc(items[i]);
+            }
+            return RandomWheel(items, totalProbability, getProbabilityFunc);
         }
 
         public static void PlayRandomPitch(this AudioSource source)

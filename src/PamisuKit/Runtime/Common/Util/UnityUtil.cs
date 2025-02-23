@@ -43,6 +43,16 @@ namespace PamisuKit.Common.Util
             return Mathf.Abs(Quaternion.Dot(a, b)) > 1 - epsilon;
         }
 
+        public static float ManhattanDistance(this Vector3 a, Vector3 b)
+        {
+            return Mathf.Abs(b.x - a.x) + Mathf.Abs(b.y - a.y) + Mathf.Abs(b.z - a.z);
+        }
+        
+        public static float ManhattanDistance(this Vector2 a, Vector2 b)
+        {
+            return Mathf.Abs(b.x - a.x) + Mathf.Abs(b.y - a.y);
+        }
+
         /// <summary>
         /// Clamps an angle value (in degree) between a minimum and maximum angle.
         /// </summary>
@@ -213,31 +223,53 @@ namespace PamisuKit.Common.Util
             position.y /= scale.y;
         }
         
-        public static async UniTask LoadSprite(this SpriteRenderer sr, string spriteRes, bool setNullWhenLoading = false, AssetRefCountMode mode = AssetRefCountMode.Single)
+        public static async UniTask LoadSprite(
+            this SpriteRenderer sr, 
+            string spriteRes, 
+            bool setNullWhenLoading = true, 
+            string defaultSpriteRes = null,
+            AssetRefCountMode mode = AssetRefCountMode.Single)
         {
             if (setNullWhenLoading)
                 sr.sprite = null;
             sr.sprite = await AssetManager.LoadAsset<Sprite>(spriteRes, mode);
+            if (sr.sprite == null && defaultSpriteRes != null)
+                sr.sprite = await AssetManager.LoadAsset<Sprite>(defaultSpriteRes, mode);
         }
         
-        public static async UniTask LoadSprite(this SpriteRenderer sr, AssetReference refer, bool setNullWhenLoading = false, AssetRefCountMode mode = AssetRefCountMode.Single)
+        public static async UniTask LoadSprite(
+            this SpriteRenderer sr, 
+            AssetReference refer, 
+            bool setNullWhenLoading = true,
+            AssetRefCountMode mode = AssetRefCountMode.Single)
         {
             if (setNullWhenLoading)
                 sr.sprite = null;
             sr.sprite = await AssetManager.LoadAsset<Sprite>(refer, mode);
         }
         
-        public static async UniTask LoadSprite(this Image image, string spriteRes, bool transparentWhenLoading = true, AssetRefCountMode mode = AssetRefCountMode.Single)
+        public static async UniTask LoadSprite(
+            this Image image, 
+            string spriteRes, 
+            bool transparentWhenLoading = true, 
+            string defaultSpriteRes = null, 
+            AssetRefCountMode mode = AssetRefCountMode.Single)
         {
             var originalColor = image.color;
             if (transparentWhenLoading)
                 image.color = TransparentWhite;
             image.sprite = await AssetManager.LoadAsset<Sprite>(spriteRes, mode);
+            if (image.sprite == null && defaultSpriteRes != null)
+                image.sprite = await AssetManager.LoadAsset<Sprite>(defaultSpriteRes, mode);
             if (transparentWhenLoading)
                 image.color = originalColor;
         }
         
-        public static async UniTask LoadSprite(this Image image, AssetReference refer, bool transparentWhenLoading = true, AssetRefCountMode mode = AssetRefCountMode.Single)
+        public static async UniTask LoadSprite(
+            this Image image, 
+            AssetReference refer, 
+            bool transparentWhenLoading = true, 
+            AssetRefCountMode mode = AssetRefCountMode.Single)
         {
             var originalColor = image.color;
             if (transparentWhenLoading)

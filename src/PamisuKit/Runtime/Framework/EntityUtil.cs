@@ -23,6 +23,16 @@ namespace PamisuKit.Framework
             return entity;
         }
         
+        public static T InstantiateMonoEntity<T>(this Region region, GameObject prefab, Transform parent, string name = null) where T : MonoEntity
+        {
+            var go = Object.Instantiate(prefab, parent);
+            if (name != null)
+                go.name = name;
+            var entity = go.GetOrAddComponent<T>();
+            entity.Setup(region);
+            return entity;
+        }
+        
         public static T NewMonoEntity<T>(this Region region, string name = null) where T : MonoEntity
         {
             var go = new GameObject();

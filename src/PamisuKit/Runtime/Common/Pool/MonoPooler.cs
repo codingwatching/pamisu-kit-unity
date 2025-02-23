@@ -69,6 +69,7 @@ namespace PamisuKit.Common.Pool
             if (_instanceToPoolDic.TryGetValue(id, out var poolObj))
             {
                 var pool = poolObj as MonoPool<T>;
+                Debug.Assert(pool != null);
                 pool.Release(item);
                 _instanceToPoolDic.Remove(id);
             }

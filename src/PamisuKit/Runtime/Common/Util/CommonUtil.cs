@@ -90,6 +90,20 @@ namespace PamisuKit.Common.Util
         {
             return Remap(v, vMin, vMax, 0f, 1f);
         }
+
+        public static int Clamp(this Vector2Int range, int value)
+        {
+            if (range.x > range.y)
+                return Mathf.Clamp(value, range.y, range.x);
+            return Mathf.Clamp(value, range.x, range.y);
+        }
+        
+        public static int Clamp(this Vector2Int range, float value)
+        {
+            if (range.x > range.y)
+                return (int)Mathf.Clamp(value, range.y, range.x);
+            return (int)Mathf.Clamp(value, range.x, range.y);
+        }
         
         public static T DeepCopyByReflection<T>(T obj)
         {
@@ -131,10 +145,9 @@ namespace PamisuKit.Common.Util
         public static void Shuffle<T>(this List<T> list)
         {
             // Fisher Yates
-            var rand = new Random();
             for (var i = list.Count - 1; i > 0; i--)
             {
-                var j = rand.Next(i + 1);
+                var j = UnityEngine.Random.Range(0, i + 1);
                 (list[i], list[j]) = (list[j], list[i]);
             }
         }
@@ -148,16 +161,25 @@ namespace PamisuKit.Common.Util
             }
             var newList = new List<T>();
             // Fisher Yates
-            var rand = new Random();
             for (var i = 0; i < list.Count - 1; i++)
             {
-                var j = rand.Next(i, list.Count);
+                var j = UnityEngine.Random.Range(0, i + 1);
                 (list[i], list[j]) = (list[j], list[i]);
                 newList.Add(list[i]);
                 if (i == count - 1)
                     break;
             }
             return newList;
+        }
+        
+        public static void Shuffle<T>(this T[] array)
+        {
+            // Fisher Yates
+            for (var i = array.Length - 1; i > 0; i--)
+            {
+                var j = UnityEngine.Random.Range(0, i + 1);
+                (array[i], array[j]) = (array[j], array[i]);
+            }
         }
         
     }

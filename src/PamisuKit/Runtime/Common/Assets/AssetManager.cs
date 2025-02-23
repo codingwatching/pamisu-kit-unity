@@ -26,6 +26,8 @@ namespace PamisuKit.Common.Assets
         // ReSharper disable Unity.PerformanceAnalysis
         private static async UniTask<T> LoadAssetSingleRefCount<T>(object key, CancellationToken cancellationToken)
         {
+            if (key == null)
+                return default;
             object dictKey = key is IKeyEvaluator? (key as IKeyEvaluator).RuntimeKey : key;
             if (_assets.TryGetValue(dictKey, out var obj))
             {
@@ -36,15 +38,27 @@ namespace PamisuKit.Common.Assets
                 return default;
             }
 
-            var asset = await Addressables.LoadAssetAsync<T>(key).ToUniTask(null, PlayerLoopTiming.Update,cancellationToken);
-            if (_assets.TryGetValue(dictKey, out var obj1) && obj1 is T assetT1)
+            try
             {
-                // Addressables.Release(key);
-                return assetT1;
-            }
+                // InvalidKeyException will not bubble up when ONLY using Addressables.LoadAssetAsync.
+                // It will only be logged to console as an error, hence the exception can not be catched.
+                // ResourceManager.ExceptionHandler can be used to set custom exception handlers for this situation. 
+                // InvalidKeyException will be throwed when using .ToUniTask(...). This exception can be catched.
+                var asset = await Addressables.LoadAssetAsync<T>(key).ToUniTask(null, PlayerLoopTiming.Update,cancellationToken);
+                if (_assets.TryGetValue(dictKey, out var obj1) && obj1 is T assetT1)
+                {
+                    // Addressables.Release(key);
+                    return assetT1;
+                }
 
-            _assets[dictKey] = asset;
-            return asset;
+                _assets[dictKey] = asset;
+                return asset;
+            }
+            catch (InvalidKeyException)
+            {
+                // Since the exception has already been logged or handled, there is no need to log it again
+                return default;
+            }
         }
 
         private static async UniTask<T> LoadAssetMultipleRefCount<T>(object key, CancellationToken cancellationToken)
